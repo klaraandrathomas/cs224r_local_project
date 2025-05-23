@@ -49,9 +49,7 @@ def train(data_dir: Path,
 
     cfg   = json.load(open(data_dir/"config.json"))
     tok   = AutoTokenizer.from_pretrained(cfg["model"], trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(
-             cfg["model"], torch_dtype=torch.float16   # force fp16
-            ).cuda()
+    model = model = AutoModelForCausalLM.from_pretrained(cfg["model"]).cuda()
 
     ds_tr = load_from_disk(data_dir/"train")
     ds_va = load_from_disk(data_dir/"val")
