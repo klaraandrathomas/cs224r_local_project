@@ -1,4 +1,4 @@
-# rlft/data/prep_sft.py
+# data/prep_smol_sft.py
 """
 Pre-tokenise Smol-Talk (or any chat dataset) for SFT.
 
@@ -9,7 +9,7 @@ applies to the completion
 • Split into train / val and save as HF-arrow on disk
 
 Run:
-    python -m rlft.data.prep_sft \
+    python -m data.prep_smol_sft \
             --dataset HuggingFaceTB/smol-smoltalk \
             --model Qwen/Qwen2.5-0.5B \
             --outdir data/processed/smol \

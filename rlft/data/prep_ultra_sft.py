@@ -1,4 +1,4 @@
-# rlft/data/prep_ultra_sft.py
+# data/prep_ultra_sft.py
 """
 Pre-tokenise UltraFeedback (preference) dataset for SFT.
 
@@ -90,7 +90,7 @@ def preprocess(
     outdir = Path(outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    raw = load_dataset(dataset, split="train")
+    raw = load_dataset(dataset, split="train_sft")
     if peek:
         raw = raw.select(range(peek))
         log.warning("peek mode: using first %d examples", len(raw))
