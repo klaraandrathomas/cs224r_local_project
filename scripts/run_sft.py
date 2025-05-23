@@ -49,8 +49,9 @@ def train(data_dir: Path,
 
     cfg   = json.load(open(data_dir/"config.json"))
     tok   = AutoTokenizer.from_pretrained(cfg["model"], trust_remote_code=True)
-    model = AutoModelForCausalLM.from_pretrained(cfg["model"],
-                                                 torch_dtype="auto").cuda()
+    model = AutoModelForCausalLM.from_pretrained(
++             cfg["model"], torch_dtype=torch.float16   # force fp16
+            ).cuda()
 
     ds_tr = load_from_disk(data_dir/"train")
     ds_va = load_from_disk(data_dir/"val")
@@ -67,14 +68,14 @@ def train(data_dir: Path,
     opt   = AdamW(model.parameters(), lr=lr)
     steps = epochs * math.ceil(len(ds_tr) / bsz)
     sched = get_linear_schedule_with_warmup(opt, 0.03 * steps, steps)
-    scaler = torch.cuda.amp.GradScaler()
+    scaler = torch.amp.GradScaler('cuda')
 
     global_step = 0
     for ep in range(epochs):
         model.train()
         for batch in dl_tr:
             batch = {k:v.cuda() for k,v in batch.items()}
-            with torch.cuda.amp.autocast():
+            with torch.amp.autocast('cuda', dtype=torch.float16):
                 loss = model(**batch).loss / grad_acc
             scaler.scale(loss).backward()
 
@@ -91,7 +92,7 @@ def train(data_dir: Path,
         with torch.no_grad():
             for batch in dl_va:
                 batch = {k:v.cuda() for k,v in batch.items()}
-                with torch.cuda.amp.autocast():
+                with torch.amp.autocast('cuda', dtype=torch.float16):
                     tot += batch["labels"].ne(-100).sum().item() * \
                            model(**batch).loss.item()
                     n   += batch["labels"].ne(-100).sum().item()
