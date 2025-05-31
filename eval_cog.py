@@ -49,6 +49,17 @@ def generate(model, tok, prompts, device, max_new=256, bsz=4):
             outs.append(ans)
     return outs
 
+def extract_nums_target(prompt_text):
+    """Extract the [numbers] and the target number from prompt text."""
+    # Extract numbers inside square brackets
+    num_match = re.search(r'Using the numbers \[(.*?)\]', prompt_text)
+    nums = [int(n) for n in num_match.group(1).strip().split()] if num_match else []
+
+    # Extract target number
+    target_match = re.search(r'equals (\d+)', prompt_text)
+    target = int(target_match.group(1)) if target_match else None
+
+    return nums, target
 
 def main():
     ap = argparse.ArgumentParser()
@@ -100,19 +111,23 @@ def main():
         w.writerows(zip(prompts, refs, preds))
     print(f"✔ results written to {out_csv}")
 
-        # JSON Output
-    out_json = Path("results") / f"leaderboard_{Path(args.ckpt_dir).name}.json"
-    with open(out_json, "w") as jf:
-        for ex, pred in zip(test_ds, preds):
-            equation = extract_solution(pred)
-            if equation is not None:
-                out_obj = {
-                    "num": ex["numbers"],
-                    "target": ex["target"],
-                    "response": equation
-                }
-                jf.write(json.dumps(out_obj) + "\n")
-    print(f"✔ JSON results written to {out_json}")
+    #output JSON
+    out_json = Path("results") / f"eval_{Path(args.ckpt_dir).name}.jsonl"
+    records = []
+    for p, pred in zip(prompts, preds):
+        nums, target = extract_nums_target(p)
+        solution = extract_solution(pred)
+        if nums and target and solution:  # only if all pieces are there
+            records.append({
+                "num": nums,
+                "response": solution,
+                "target": target
+            })
+    with open(out_json, "w") as f:
+        for r in records:
+            json.dump(r, f)
+            f.write("\n")
+    print(f"✔ JSONL results written to {out_json}")
 
 if __name__ == "__main__":
     main()
