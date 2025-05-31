@@ -15,7 +15,7 @@ from sacrebleu import corpus_bleu
 from rouge_score import rouge_scorer
 from bert_score import score as bert_score
 from countdown import extract_solution
-
+import json
 
 SYSTEM_MSG = "You are a helpful assistant skilled at solving Countdown maths puzzles."
 
@@ -101,7 +101,7 @@ def main():
     print(f"✔ results written to {out_csv}")
 
         # JSON Output
-    out_json = Path("results") / f"leaderboard_{Path(args.ckpt_dir).name}.jsonl"
+    out_json = Path("results") / f"leaderboard_{Path(args.ckpt_dir).name}.json"
     with open(out_json, "w") as jf:
         for ex, pred in zip(test_ds, preds):
             equation = extract_solution(pred)
