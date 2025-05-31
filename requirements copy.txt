@@ -1,0 +1,17 @@
+# ---- runtime Python version (make sure you're on Python 3.10) ------------
+# (pip itself will not install Python; use pyenv/conda/system package manager)
+
+# ---- core ML stack --------------------------------------------------------
+torch==2.2.2               # grab the CUDA 12.1 wheel:  pip3 install torch==2.2.0+cu121 --index-url https://download.pytorch.org/whl/cu121
+transformers>=4.40
+datasets>=2.19
+sentencepiece              # required by some tokenizer configs
+accelerate                 # HF distributed helpers
+
+# ---- experiment tracking / config ----------------------------------------
+wandb
+hydra-core
+
+# ---- extra tools ----------------------------------------------------------
+#otx-client                 # NVIDIA Nemotron OTX API helper
+vllm
