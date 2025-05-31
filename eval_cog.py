@@ -14,6 +14,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from sacrebleu import corpus_bleu
 from rouge_score import rouge_scorer
 from bert_score import score as bert_score
+from countdown import extract_solution
 
 
 SYSTEM_MSG = "You are a helpful assistant skilled at solving Countdown maths puzzles."
@@ -98,6 +99,20 @@ def main():
         w.writerow(["prompt", "reference", "prediction"])
         w.writerows(zip(prompts, refs, preds))
     print(f"✔ results written to {out_csv}")
+
+        # JSON Output
+    out_json = Path("results") / f"leaderboard_{Path(args.ckpt_dir).name}.jsonl"
+    with open(out_json, "w") as jf:
+        for ex, pred in zip(test_ds, preds):
+            equation = extract_solution(pred)
+            if equation is not None:
+                out_obj = {
+                    "num": ex["numbers"],
+                    "target": ex["target"],
+                    "response": equation
+                }
+                jf.write(json.dumps(out_obj) + "\n")
+    print(f"✔ JSON results written to {out_json}")
 
 if __name__ == "__main__":
     main()
